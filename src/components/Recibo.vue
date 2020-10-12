@@ -1,35 +1,76 @@
 <template>
-  <div class="cardWrap">
-    <div class="card cardLeft">
-      <h6 id="text">Fly Away</h6>
-      <div class="title">
-        <h6 id="setting">Cali</h6>
-        <span id="normalize">origen</span>
+  <div>
+    <div class="cardWrap" v-for="post in posts" :key="post._id">
+      <b-alert :show="loading" variant="info">Loading...</b-alert>
+      <div class="card cardLeft" id="tiquete">
+        <h6 id="text">Fly Away</h6>
+        <div class="title">
+          <b-container>
+            <b-row>
+              <b-col
+                ><h6 id="setting">{{ post.origen }}</h6>
+                <span id="normalize">origen</span></b-col>
+              <b-col
+                ><h6 id="setting">{{ post.destino }}</h6>
+                <span id="normalize">destino</span></b-col>
+            </b-row>
+          </b-container>
+        </div>
+        <div class="name">
+          <h6 id="setting">{{ post.nombre_pasajero }}</h6>
+          <span id="normalize">nombre</span>
+        </div>
+        <div class="time">
+          <h6 id="setting-date">{{ post.fecha_vuelo }}</h6>
+          <span id="normalize">fecha - hora</span>
+        </div>
       </div>
-      <div class="title">
-        <h6 id="setting">Bogota</h6>
-        <span id="normalize">destino</span>
+      <div class="card cardRight" id="tiquete">
+        <div class="eye"><b-icon icon="lightning"></b-icon></div>
+        <div class="number">
+          <h6 id="text_right">{{ post.asiento }}</h6>
+          <span id="normalize_right">asiento</span>
+          <a id="cancel_ticket" href="#" @click.prevent="deletePost(post._id)">eliminar</a>
+        </div>
+        <div class="barcode"></div>
       </div>
-      <div class="name">
-        <h6 id="setting">Alejandro Cortes</h6>
-        <span id="normalize">nombre</span>
-      </div>
-    </div>
-    <div class="card cardRight">
-      <div class="eye"><b-icon icon="lightning"></b-icon></div>
-      <div class="number">
-        <h6 id="text_right">156C</h6>
-        <span id="normalize_right">asiento</span>
-      </div>
-      <div class="time">
-        <h6 id="setting-date">18:00</h6>
-        <span id="normalize">hora</span>
-      </div>
-      <div class="barcode"></div>
     </div>
   </div>
 </template>
 
+<script>
+import api from '@/api'
+export default {
+  data () {
+    return {
+      loading: false,
+      posts: [],
+      model: {}
+    }
+  },
+  async created () {
+    this.refreshPosts()
+  },
+  methods: {
+    async refreshPosts () {
+      this.loading = true
+      this.model = await api.getTiquetes()
+      this.posts = this.model.tiquetes
+      this.loading = false
+    },
+    async deletePost (id) {
+      if (confirm('Esta seguro de eliminar este tiquete?')) {
+        // if we are editing a post we deleted, remove it from the form
+        if (this.model._id === id) {
+          this.model = {}
+        }
+        await api.deleteTiquete(id)
+        this.refreshPosts()
+      }
+    }
+  }
+}
+</script>
 
 <style>
 .cardWrap {
@@ -42,6 +83,10 @@
 #text {
   font-weight: bold;
   color: #fff;
+}
+
+#cancel_ticket{
+  font-size: 12px;
 }
 
 #text_right {
@@ -74,7 +119,7 @@
   margin: 0.2em auto;
 }
 
-.card {
+#tiquete {
   background: linear-gradient(
     to bottom,
     #e84c3d 0%,
@@ -114,13 +159,17 @@
   margin: 0.2em 0 0 0;
 }
 
+.destino {
+
+}
+
 .name,
 .seat {
   margin: 0.3em 0 0 0;
 }
 
 .time {
-  margin: 0.1em 0 0 1em;
+  margin: 0;
 }
 
 .seat,
